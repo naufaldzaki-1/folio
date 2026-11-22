@@ -18,11 +18,18 @@ ada di [`AUDIT.md`](./AUDIT.md).
 
 ## Menjalankan lokal
 
+> **Jangan pernah meminta atau membagikan file `.env`.** File itu berisi password
+> database, `AUTH_SECRET`, dan secret key Supabase milik pemilik project. Setiap
+> orang wajib memakai project Supabase dan API key LLM-nya sendiri, karena
+> `DIRECT_URL`/`DATABASE_URL` menunjuk ke satu database milik satu orang.
+
 1. Buat project Supabase, lalu salin **Transaction pooler** (port 6543) sebagai
    `DATABASE_URL` dan **Direct connection** (port 5432) sebagai `DIRECT_URL` dari
    tombol **Connect**. URL-encode password jika mengandung karakter khusus.
 2. Salin `.env.example` menjadi `.env`, isi kedua URL, `AUTH_SECRET` (≥32 karakter
    acak), kredensial LLM, dan kredensial Supabase Storage.
+   Buat `AUTH_SECRET` dengan `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+   Jangan pakai nilai milik orang lain — semua sesi akan saling tidak valid.
 3. `npm ci`, lalu `npx.cmd prisma validate` dan `npx.cmd prisma generate`.
 4. Siapkan tabel. **Jika tabel FOLIO belum ada**, jalankan
    `npx.cmd prisma migrate deploy`. **Jika tabel sudah dibuat lewat
@@ -50,6 +57,7 @@ PowerShell yang memblokir `npm.ps1` perlu memakai `npm.cmd`/`npx.cmd`.
 | `SUPABASE_URL` / `SUPABASE_SECRET_KEY` | ya | Untuk Storage privat. Jangan pernah dikirim ke browser. |
 | `SUPABASE_STORAGE_BUCKET` | tidak | Default `folio-cvs`. |
 | `CV_MAX_BYTES` | tidak | Default `5242880` (5 MB), maksimum 20 MB. |
+| `CV_FONT_DIR` | tidak | Folder berisi `arial.ttf`/`arialbd.ttf`. Default `C:\Windows\Fonts`. Di Linux arahkan ke folder Liberation Sans agar ketentuan Arial tetap terpenuhi. |
 
 ## Perintah
 
@@ -57,7 +65,7 @@ PowerShell yang memblokir `npm.ps1` perlu memakai `npm.cmd`/`npx.cmd`.
 | --- | --- |
 | `npm.cmd run dev` | Server pengembangan. |
 | `npm.cmd run build` / `start` | Build dan jalankan produksi lokal. |
-| `npm.cmd run lint` / `typecheck` / `test` | Validasi; `test` menjalankan 32 tes. |
+| `npm.cmd run lint` / `typecheck` / `test` | Validasi; `test` menjalankan 48 tes. |
 | `npm.cmd run catalog:seed` | Isi 35 posisi junior + 175 kriteria (idempotent). |
 | `npm.cmd run templates:seed` | Isi 2 template CV (idempotent). |
 | `npm.cmd run llm:check` | Uji pipeline LLM Fase 2 (ekstraksi + insight), hanya metadata. |
