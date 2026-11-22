@@ -1,0 +1,1 @@
+export function Logo() { return <div className="flex items-center gap-2 text-xl font-bold tracking-tight"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white">F</span><span>FOLIO</span></div>; }

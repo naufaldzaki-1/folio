@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  email            String            @unique
+  passwordHash     String            @map("password_hash")
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  profiles         UserProfile[]
+  uploadedFiles    UploadedFile[]
+  careerProfiles   CareerProfile[]
+  userSkills       UserSkill[]
+  analyses         CareerAnalysis[]
+  roadmaps         Roadmap[]
+  cvDocuments      CvDocument[]
+  aiGenerationLogs AiGenerationLog[]
+  sessions         AuthSession[]
+
+  @@map("users")
+}
+
+model AuthSession {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model UserProfile {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  phone     String?
+  location  String?
+  headline  String?
+  summary   String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_profiles")
+}
+
+model UploadedFile {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String           @map("user_id") @db.Uuid
+  originalFilename String           @map("original_filename")
+  storageKey       String           @map("storage_key")
+  mimeType         String           @map("mime_type")
+  fileSize         Int              @map("file_size")
+  processingStatus String           @map("processing_status")
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyses         CareerAnalysis[]
+
+  @@index([userId])
+  @@map("uploaded_files")
+}
+
+model CareerProfile {
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId               String           @map("user_id") @db.Uuid
+  sourceAnalysisId     String?          @map("source_analysis_id") @db.Uuid
+  extractedProfileJson Json             @map("extracted_profile_json")
+  userConfirmed        Boolean          @default(false) @map("user_confirmed")
+  createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceAnalysis       CareerAnalysis?  @relation("ProfileSource", fields: [sourceAnalysisId], references: [id], onDelete: SetNull)
+  analyses             CareerAnalysis[] @relation("AnalysisProfile")
+
+  @@index([userId])
+  @@map("career_profiles")
+}
+
+model Skill {
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  normalizedName String             @unique @map("normalized_name")
+  category       String
+  description    String?
+  userSkills     UserSkill[]
+  positionSkills JobPositionSkill[]
+  roadmapItems   RoadmapItem[]
+
+  @@map("skills")
+}
+
+model UserSkill {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  skillId          String   @map("skill_id") @db.Uuid
+  proficiencyLevel String?  @map("proficiency_level")
+  evidence         String
+  source           String
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill            Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@map("user_skills")
+}
+
+model JobCategory {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String?
+  positions   JobPosition[]
+
+  @@map("job_categories")
+}
+
+model JobPosition {
+  id              String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categoryId      String                 @map("category_id") @db.Uuid
+  title           String
+  description     String
+  seniorityLevel  String                 @map("seniority_level")
+  isActive        Boolean                @default(true) @map("is_active")
+  sourceReference String?                @map("source_reference")
+  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  category        JobCategory            @relation(fields: [categoryId], references: [id])
+  skills          JobPositionSkill[]
+  recommendations CareerRecommendation[]
+  targetRoadmaps  Roadmap[]              @relation("TargetPosition")
+
+  @@index([categoryId])
+  @@map("job_positions")
+}
+
+model JobPositionSkill {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jobPositionId    String      @map("job_position_id") @db.Uuid
+  skillId          String      @map("skill_id") @db.Uuid
+  importanceWeight Float       @map("importance_weight")
+  requiredLevel    String?     @map("required_level")
+  isRequired       Boolean     @default(false) @map("is_required")
+  jobPosition      JobPosition @relation(fields: [jobPositionId], references: [id], onDelete: Cascade)
+  skill            Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([jobPositionId, skillId])
+  @@map("job_position_skills")
+}
+
+model CareerAnalysis {
+  id                String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String                 @map("user_id") @db.Uuid
+  uploadedFileId    String?                @map("uploaded_file_id") @db.Uuid
+  careerProfileId   String?                @map("career_profile_id") @db.Uuid
+  status            String
+  modelMetadataJson Json?                  @map("model_metadata_json")
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt       DateTime?              @map("completed_at") @db.Timestamptz(6)
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploadedFile      UploadedFile?          @relation(fields: [uploadedFileId], references: [id], onDelete: SetNull)
+  careerProfile     CareerProfile?         @relation("AnalysisProfile", fields: [careerProfileId], references: [id], onDelete: SetNull)
+  sourceProfiles    CareerProfile[]        @relation("ProfileSource")
+  recommendations   CareerRecommendation[]
+  insights          CareerInsight[]
+  roadmaps          Roadmap[]
+
+  @@index([userId])
+  @@map("career_analyses")
+}
+
+model CareerRecommendation {
+  id                 String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  analysisId         String         @map("analysis_id") @db.Uuid
+  jobPositionId      String         @map("job_position_id") @db.Uuid
+  matchScore         Float          @map("match_score")
+  scoreBreakdownJson Json           @map("score_breakdown_json")
+  explanationJson    Json           @map("explanation_json")
+  rank               Int
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  analysis           CareerAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  jobPosition        JobPosition    @relation(fields: [jobPositionId], references: [id])
+
+  @@map("career_recommendations")
+}
+
+model CareerInsight {
+  id                   String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  analysisId           String         @unique @map("analysis_id") @db.Uuid
+  profileSummary       String         @map("profile_summary")
+  strengthsJson        Json           @map("strengths_json")
+  improvementAreasJson Json           @map("improvement_areas_json")
+  careerPotentialJson  Json           @map("career_potential_json")
+  cvEvaluationJson     Json           @map("cv_evaluation_json")
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  analysis             CareerAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@map("career_insights")
+}
+
+model Roadmap {
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String          @map("user_id") @db.Uuid
+  careerAnalysisId    String?         @map("career_analysis_id") @db.Uuid
+  targetJobPositionId String          @map("target_job_position_id") @db.Uuid
+  durationMonths      Int             @map("duration_months")
+  weeklyStudyHours    Int             @map("weekly_study_hours")
+  status              String
+  roadmapJson         Json            @map("roadmap_json")
+  createdAt           DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  careerAnalysis      CareerAnalysis? @relation(fields: [careerAnalysisId], references: [id], onDelete: SetNull)
+  targetJobPosition   JobPosition     @relation("TargetPosition", fields: [targetJobPositionId], references: [id])
+  items               RoadmapItem[]
+
+  @@index([userId])
+  @@map("roadmaps")
+}
+
+model RoadmapItem {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roadmapId       String    @map("roadmap_id") @db.Uuid
+  title           String
+  description     String
+  skillId         String?   @map("skill_id") @db.Uuid
+  periodNumber    Int       @map("period_number")
+  estimatedHours  Int       @map("estimated_hours")
+  expectedOutcome String    @map("expected_outcome")
+  status          String
+  completedAt     DateTime? @map("completed_at") @db.Timestamptz(6)
+  roadmap         Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  skill           Skill?    @relation(fields: [skillId], references: [id], onDelete: SetNull)
+
+  @@map("roadmap_items")
+}
+
+model CvDocument {
+  id                    String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String     @map("user_id") @db.Uuid
+  title                 String
+  templateId            String     @map("template_id") @db.Uuid
+  structuredContentJson Json       @map("structured_content_json")
+  generatedFileKey      String?    @map("generated_file_key")
+  status                String
+  createdAt             DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user                  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template              CvTemplate @relation(fields: [templateId], references: [id])
+
+  @@index([userId])
+  @@map("cv_documents")
+}
+
+model CvTemplate {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String
+  description        String?
+  previewImage       String?      @map("preview_image")
+  templateConfigJson Json         @map("template_config_json")
+  isActive           Boolean      @default(true) @map("is_active")
+  documents          CvDocument[]
+
+  @@map("cv_templates")
+}
+
+model AiGenerationLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  featureName String   @map("feature_name")
+  provider    String
+  modelName   String   @map("model_name")
+  status      String
+  latencyMs   Int?     @map("latency_ms")
+  errorCode   String?  @map("error_code")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("ai_generation_logs")
+}

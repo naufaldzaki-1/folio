@@ -1,0 +1,5 @@
+import Link from "next/link";
+type Props = { title: string; description: string; href: string; color: string; icon: string; ready?: boolean };
+// The badge only appears for features that are not implemented yet; every
+// feature is live now, so `ready` keeps the card honest.
+export function FeatureCard({ title, description, href, color, icon, ready }: Props) { return <Link href={href} className="group rounded-2xl border border-border bg-white p-6 transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg"><div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl text-xl ${color}`}>{icon}</div><div className="mb-2 flex items-center justify-between"><h3 className="font-semibold">{title}</h3>{ready ? <span className="rounded-full bg-mint px-3 py-1 text-xs font-medium text-deep">Siap dipakai</span> : <span className="rounded-full bg-lavender px-3 py-1 text-xs font-medium text-deep">Segera Hadir</span>}</div><p className="text-sm leading-6 text-secondary">{description}</p></Link>; }
