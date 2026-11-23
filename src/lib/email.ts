@@ -90,8 +90,11 @@ export async function sendOtpEmail(toEmail: string, name: string, otpCode: strin
       html: htmlContent,
     });
     return true;
-  } catch (error: any) {
-    console.error("[Email] Gagal mengirim email OTP via SMTP:", error?.message ?? "Error pengiriman email");
+  } catch (error: unknown) {
+    // A catch binding is `unknown`, not `any`: narrow it before reading .message
+    // so a non-Error throw (e.g. a rejected string) cannot crash the log line.
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error("[Email] Gagal mengirim email OTP via SMTP:", detail || "Error pengiriman email");
     throw new Error("Gagal mengirim email verifikasi ke alamat email kamu. Pastikan alamat email benar.");
   }
 }

@@ -57,12 +57,15 @@ export async function createAndSendOtp(user: { id: string; email: string; name: 
   try {
     await sendOtpEmail(user.email, user.name, otpCode);
     return { success: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     // Jika email gagal terkirim, hanguskan kode OTP agar tidak tertinggal kode gantung
     await prisma.emailOtp.deleteMany({ where: { userId: user.id } });
+    // Same narrowing as above: only read .message once the value is known to be
+    // an Error, otherwise fall back to the generic wording.
+    const message = err instanceof Error && err.message ? err.message : "";
     return {
       success: false,
-      error: err?.message || "Gagal mengirim email verifikasi ke alamat email kamu. Pastikan alamat email benar.",
+      error: message || "Gagal mengirim email verifikasi ke alamat email kamu. Pastikan alamat email benar.",
     };
   }
 }
