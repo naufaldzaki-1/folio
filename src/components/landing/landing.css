@@ -1,0 +1,45 @@
+/* Animation for the landing page only. Deliberately kept out of globals.css so
+   no other route is affected. Pure CSS: no animation library, no new dependency.
+
+   Motion is calm on purpose: one short rise-in per section, staggered cards, and
+   a roadmap bar that fills. Nothing loops, nothing blinks. */
+
+@keyframes folio-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes folio-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Applied by <Reveal /> only once a section is about to enter the viewport. */
+.folio-reveal {
+  animation: folio-rise 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: var(--folio-delay, 0ms);
+}
+
+/* The matching score / roadmap progress bar grows from the left edge. */
+.folio-fill {
+  transform-origin: left center;
+  animation: folio-fill 900ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: var(--folio-delay, 0ms);
+}
+
+/* Anyone who has asked their system for less motion gets the full page with
+   every element already in its final state. */
+@media (prefers-reduced-motion: reduce) {
+  .folio-reveal,
+  .folio-fill {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

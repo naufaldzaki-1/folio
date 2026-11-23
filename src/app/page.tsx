@@ -1,3 +1,28 @@
-import Link from "next/link";
-import { Logo } from "@/components/Logo";
-export default function LandingPage() { return <main className="min-h-screen bg-white"><header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6"><Logo /><div className="flex items-center gap-3"><Link href="/login" className="px-4 py-2 text-sm font-medium text-secondary hover:text-text">Masuk</Link><Link href="/register" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-deep">Mulai Sekarang</Link></div></header><section className="mx-auto max-w-6xl px-6 pb-24 pt-20 text-center"><span className="rounded-full bg-lavender px-4 py-2 text-sm font-medium text-deep">Pengembangan karier yang lebih terarah</span><h1 className="mx-auto mt-7 max-w-3xl text-5xl font-bold leading-tight tracking-tight">Bangun masa depan kariermu bersama <span className="text-primary">FOLIO</span></h1><p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-secondary">Platform pengembangan karier yang membantu kamu memahami potensi, merencanakan langkah, dan tampil lebih percaya diri.</p><Link href="/register" className="mt-9 inline-block rounded-xl bg-primary px-7 py-3.5 font-semibold text-white shadow-sm hover:bg-deep">Mulai Perjalananmu</Link></section></main>; }
+import type { Metadata } from "next";
+import { LandingHeader } from "@/components/landing/LandingHeader";
+import { Hero } from "@/components/landing/Hero";
+import { Features } from "@/components/landing/Features";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { WhyFolio } from "@/components/landing/WhyFolio";
+import { Closing } from "@/components/landing/Closing";
+// Scoped to this route only. Importing it here instead of globals.css keeps the
+// dashboard and auth pages untouched.
+import "@/components/landing/landing.css";
+
+export const metadata: Metadata = {
+  title: "FOLIO — AI-Powered Career Development Platform",
+  description: "Unggah CV, dapat rekomendasi posisi junior, susun roadmap belajar, dan buat CV ATS dalam satu alur.",
+};
+
+export default function LandingPage() {
+  return (
+    <main className="min-h-screen bg-background">
+      <LandingHeader />
+      <Hero />
+      <Features />
+      <HowItWorks />
+      <WhyFolio />
+      <Closing />
+    </main>
+  );
+}
