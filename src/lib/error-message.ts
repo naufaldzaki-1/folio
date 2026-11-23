@@ -7,7 +7,7 @@ import { connectionMessage } from "@/lib/ui-messages";
 // failure never leaks schema or infrastructure details to the browser.
 // Keep this list in sync with the wording used in src/lib/**; a missing prefix
 // silently turns a helpful message into "Periksa file dan konfigurasi server".
-const safePattern = /^(Katalog pekerjaan|Skill belum|File kosong|File terlalu besar|Hanya file PDF|PDF tidak valid|DOCX tidak valid|CV kosong|File rusak|Bucket CV|Gagal menyimpan (CV|dokumen)|Konfigurasi (LLM|Supabase)|LLM_|Posisi target|Bidang|Durasi|Waktu belajar|Kapasitas|Roadmap|Template CV|Dokumen CV|CV belum|Isi CV belum|Isi dulu|Isi keterampilan|Belum ada posisi katalog|Data CV|Profil|Analisis|Dokumen tidak ditemukan)/;
+const safePattern = /^(Katalog pekerjaan|Skill belum|File kosong|File terlalu besar|Hanya file PDF|PDF tidak valid|DOCX tidak valid|CV kosong|File rusak|Bucket CV|Gagal menyimpan (CV|dokumen)|Gagal mengirim email|Layanan pengiriman email|Konfigurasi (LLM|Supabase)|LLM_|Posisi target|Bidang|Durasi|Waktu belajar|Kapasitas|Roadmap|Template CV|Dokumen CV|CV belum|Isi CV belum|Isi dulu|Isi keterampilan|Belum ada posisi katalog|Data CV|Profil|Analisis|Dokumen tidak ditemukan)/;
 
 export const genericMessage = "Proses gagal. Periksa file dan konfigurasi server, lalu coba lagi.";
 

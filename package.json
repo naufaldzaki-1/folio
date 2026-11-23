@@ -28,6 +28,7 @@
     "jose": "^6.0.10",
     "mammoth": "^1.13.0",
     "next": "^15.3.2",
+    "nodemailer": "^10.6.1",
     "openai": "^7.62.0",
     "pdf-parse": "^1.1.1",
     "pdfkit": "^0.21.0",
@@ -38,6 +39,7 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",
     "@types/node": "^22.15.3",
+    "@types/nodemailer": "^8.0.2",
     "@types/pdf-parse": "^1.1.5",
     "@types/pdfkit": "^0.17.7",
     "@types/react": "^19.0.0",

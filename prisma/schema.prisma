@@ -13,6 +13,7 @@ model User {
   name             String
   email            String            @unique
   passwordHash     String            @map("password_hash")
+  emailVerified    Boolean           @default(false) @map("email_verified")
   createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   profiles         UserProfile[]
@@ -24,8 +25,24 @@ model User {
   cvDocuments      CvDocument[]
   aiGenerationLogs AiGenerationLog[]
   sessions         AuthSession[]
+  otpCodes         EmailOtp[]
 
   @@map("users")
+}
+
+model EmailOtp {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  email     String
+  codeHash  String   @map("code_hash")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@map("email_otps")
 }
 
 model AuthSession {
